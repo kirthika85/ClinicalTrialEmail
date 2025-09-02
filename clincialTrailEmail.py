@@ -16,9 +16,11 @@ selected_trial_col = trial_names[selected_trial_name]
 st.write(f"You selected: {selected_trial_name}")
 
 # 2. Provider count input
-count_providers = st.number_input("Count of Providers to be identified?", min_value=1, step=1, value=3)
+count_providers = st.number_input(
+    "Count of Providers to be identified?", min_value=1, step=1, value=3
+)
 
-# 3. Find Providers button
+# 3. Find Providers button -- store found provider info in session state!
 if st.button("Find Providers"):
     trial_df = df[df[selected_trial_col] == "Yes"]
     provider_counts = trial_df["PROVIDER_NAME"].value_counts()
@@ -27,17 +29,20 @@ if st.button("Find Providers"):
         lambda x: f"{x.split()[1].lower()}@doctors.com" if len(x.split())>1 else f"{x.lower()}@doctors.com"
     )
     providers_info["Patient Count"] = providers_info["PROVIDER_NAME"].map(provider_counts)
-    providers_info = providers_info.sort_values(by="Patient Count", ascending=False).head(int(count_providers))
+    providers_info = providers_info.sort_values(by="Patient Count", ascending=False).head(int(count_providers)
+    )
+    # Save providers_info to session state
+    st.session_state.providers_info = providers_info
 
+# 4. Always show provider list and checkboxes if in session state!
+if hasattr(st.session_state, "providers_info"):
     st.write("Please find below Provider list. Select those to whom you want the welcome email to be triggered")
-
-    # Display persistent checkboxes with session state
+    providers_info = st.session_state.providers_info
     for _, row in providers_info.iterrows():
         key = f"provider_{row['PROVIDER_ID']}"
         label = f"{row['PROVIDER_NAME']} | {row['Email']} (Patient Count {row['Patient Count']})"
         st.checkbox(label, key=key)
-
-    # 4. Send Email button (moved outside the button block for persistency)
+    # Send Email button
     if st.button("Send Email to Selected Providers"):
         selected_providers = []
         for _, row in providers_info.iterrows():
