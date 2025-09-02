@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 
 # Load local CSV file
-df = pd.read_csv("Actual-Data-1.csv")
+df = pd.read_csv("Actual-Data.csv")
 
 # List available clinical trial columns
 trial_columns = [col for col in df.columns if col.startswith("COHORT_")]
